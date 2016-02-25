@@ -63,47 +63,52 @@ tab_options.each do |tab_option|
   games << {
     teams: teams,
     prices: prices,
+    fte: [],
   }
 end
 
 browser = Watir::Browser.start('http://projects.fivethirtyeight.com/2016-nba-picks/')
 away_teams = browser.tr(class: 'away').text.split("\n")
-away_probs = browser.tr(class: 'prob-row-top').text.split("\n")
-home_probs = browser.tr(class: 'prob-row-bottom').text.split("\n")
+away_probs = browser.tr(class: 'prob-row-top').text.split("\n")[1].split(' ')
+home_probs = browser.tr(class: 'prob-row-bottom').text.split("\n")[0].split(' ')
 home_teams = browser.tr(class: 'home').text.split("\n")
+
+browser.div(id: 'arrow-right').click
+
+away_teams += browser.tr(class: 'away').text.split("\n")
+away_probs += browser.tr(class: 'prob-row-top').text.split("\n")[1].split(' ')
+home_probs += browser.tr(class: 'prob-row-bottom').text.split("\n")[0].split(' ')
+home_teams += browser.tr(class: 'home').text.split("\n")
+
+away_teams.delete_if { |i| i.length != 2 && i.length != 3 }
+away_probs = away_probs.map { |i| i.to_i }.delete_if { |i| i == 0 }
+home_probs = home_probs.map { |i| i.to_i }.delete_if { |i| i == 0 }
+home_teams.delete_if { |i| i.length != 2 && i.length != 3 }
+
 browser.close
 
-[away_teams, home_teams, away_probs].each { |i| i.shift }
-
-away_probs = away_probs[0].split(' ').map { |i| i.to_i }
-home_probs = home_probs[0].split(' ').map { |i| i.to_i }
-
 games.each do |game|
-  away_position = nil
-  home_position = nil
-  game[:teams].each do |team|
-    idx = away_teams.find_index(team.to_s)
-    away_position = idx if idx
-    idx = home_teams.find_index(team.to_s)
-    home_position = idx if idx
-  end
-  if away_position == home_position
-    away_prob = away_probs[away_position]
-    home_prob = home_probs[away_position]
-    if away_prob > home_prob
-      game[:win] = away_teams[away_position].to_sym
-      game[:fte] = away_prob
-    else
-      game[:win] = home_teams[away_position].to_sym
-      game[:fte] = home_prob
+  away_teams.each_with_index do |away_team, idx|
+    home_team = home_teams[idx]
+    away_prob = away_probs[idx]
+    home_prob = home_probs[idx]
+    next unless game[:teams].include?(away_team.to_sym) && game[:teams].include?(home_team.to_sym)
+    game[:teams].each_with_index do |team, idx2|
+      game[:fte][idx2] = if away_team == team.to_s
+        away_prob
+      else
+        home_prob
+      end
     end
   end
 end
 
 games.each do |game|
-  next if game[:fte] < 85
-  tab_return = game[:prices][0] - 1
-  expected_return = tab_return * (game[:fte].to_f / 100)
-  next if expected_return < 0.2
-  puts "#{game[:teams][0]}-#{game[:teams][1]} - #{game[:win]} - #{expected_return}"
+  puts "#{game[:teams][0]}-#{game[:teams][1]}"
+  game[:teams].each_with_index do |team, idx|
+    tab_return = game[:prices][idx] - 1
+    expected_return = tab_return * (game[:fte][idx].to_f / 100)
+    puts "        #{game[:teams][idx]} to win: #{game[:fte][idx]}% - $#{expected_return.round(2)}"
+  end
+  puts ''
 end
