@@ -1,8 +1,6 @@
 require 'httparty'
 require 'watir-webdriver'
 
-HTTParty::Basement.default_options.update(verify: false)
-
 teams_map = {
   # tab: fte
   :Hornets => :CHA,
@@ -39,7 +37,7 @@ teams_map = {
 
 games = []
 
-tab_doc = HTTParty.get('https://www.tab.co.nz/sport/ajax/page/comp/nba').parsed_response
+tab_doc = HTTParty.get('http://www.tab.co.nz/sport/ajax/page/comp/nba').parsed_response
 
 tab_options = tab_doc.scan(/<a href="\/sport\/#\d+">(.*?)<\/a>/)
 tab_options.each do |tab_option|
