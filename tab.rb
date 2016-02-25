@@ -25,6 +25,16 @@ teams_map = {
   :Wizards => :WSH,
   :Nuggets => :DEN,
   :Kings => :SAC,
+  :Magic => :ORL,
+  :Celtics => :BOS,
+  :Suns => :PHX,
+  :Blazers => :POR,
+  :Rockets => :HOU,
+  :Nets => :BKN,
+  :Bucks => :MIL,
+  :Pelicans => :NO,
+  :Jazz => :UTA,
+  :Hawks => :ATL,
 }
 
 games = []
