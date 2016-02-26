@@ -106,8 +106,7 @@ end
 games.each do |game|
   puts "#{game[:teams][0]}-#{game[:teams][1]}"
   game[:teams].each_with_index do |team, idx|
-    tab_return = game[:prices][idx] - 1
-    expected_return = tab_return * (game[:fte][idx].to_f / 100)
+    expected_return = game[:prices][idx] * (game[:fte][idx].to_f / 100)
     puts "        #{game[:teams][idx]} to win: #{game[:fte][idx]}% - $#{expected_return.round(2)}"
   end
   puts ''
